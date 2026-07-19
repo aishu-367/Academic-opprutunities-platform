@@ -1,37 +1,47 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+'use client'
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import FilterBar from '../components/FilterBar';
 
-export default function Homepage() {
-  const router = useRouter();
-  const [degree, setDegree] = useState('');
-  const [year, setYear] = useState('');
+interface Opportunity {
+  id: string;
+  title: string;
+  description: string;
+  degree?: string;
+}
 
-  const handleNavigation = () => {
-    if (degree && year) {
-      router.push(`/results?degree=${degree}&year=${year}`);
-    } else {
-      alert("Please select both options.");
+export default function OpportunitiesPage() {
+  const [data, setData] = useState<Opportunity[]>([]);
+  const [filters, setFilters] = useState<{ degree?: string }>({});
+
+  const fetchData = async () => {
+    let query = supabase.from('opportunities').select('*');
+
+    if (filters.degree) {
+      query = query.eq('degree', filters.degree);
     }
+
+    const { data: results, error } = await query;
+    if (error) console.error(error);
+    else setData(results || []);
   };
 
+  useEffect(() => {
+    fetchData();
+  }, [filters]);
+
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-10">
-      <h1 className="text-4xl font-bold mb-4">Discover Your Next Academic Opportunity</h1>
-      <div className="bg-white p-8 rounded-lg shadow-md border w-full max-w-md space-y-4 text-black">
-        <select className="w-full p-2 border rounded" value={degree} onChange={(e) => setDegree(e.target.value)}>
-          <option value="">Select Degree</option>
-          <option value="BTech CSE">BTech CSE</option>
-          <option value="BTech ECE">BTech ECE</option>
-        </select>
-        <select className="w-full p-2 border rounded" value={year} onChange={(e) => setYear(e.target.value)}>
-          <option value="">Select Year</option>
-          <option value="First Year">First Year</option>
-          <option value="Second Year">Second Year</option>
-        </select>
-        <button onClick={handleNavigation} className="w-full bg-blue-600 text-white p-3 rounded font-bold">
-          Find Opportunities
-        </button>
+    <main className="p-8">
+      <h1>Academic Opportunities</h1>
+      <FilterBar onFilterUpdate={setFilters} />
+      
+      <div className="mt-6">
+        {data.map((item) => (
+          <div key={item.id} className="p-4 border-b">
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </div>
+        ))}
       </div>
     </main>
   );
