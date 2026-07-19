@@ -19,7 +19,8 @@ export default function Homepage() {
     router.push(`/results?${query}`);
   };
 
-  const inputStyle = "w-full p-2 border rounded text-black mb-4";
+  // Changed bg-white and text-black so inputs are readable
+  const inputStyle = "w-full p-2 border rounded bg-white text-black mb-4";
 
   return (
     <main className="p-10 max-w-md mx-auto">
