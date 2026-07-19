@@ -5,8 +5,15 @@ import { supabase } from '../../lib/supabase';
 
 export default function Results() {
   const searchParams = useSearchParams();
+  
+  // Grab all parameters
   const degree = searchParams.get('degree');
   const year = searchParams.get('year');
+  const interests = searchParams.get('interests');
+  const oppType = searchParams.get('oppType');
+  const region = searchParams.get('region');
+  const funding = searchParams.get('funding');
+
   const [opportunities, setOpportunities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,24 +25,29 @@ export default function Results() {
       if (error) {
         console.error("Error:", error);
       } else if (data) {
-        const filtered = data.filter((item: any) => 
-          item.degree?.trim() === degree?.trim() && 
-          item.year?.trim() === year?.trim()
-        );
+        // Filter logic: Only filter if the user actually selected/typed something
+        const filtered = data.filter((item: any) => {
+          return (
+            (!degree || item.degree?.trim() === degree.trim()) &&
+            (!year || item.year?.trim() === year.trim()) &&
+            (!interests || item.interests?.toLowerCase().includes(interests.toLowerCase())) &&
+            (!oppType || item.oppType?.trim() === oppType.trim()) &&
+            (!region || item.region?.trim() === region.trim()) &&
+            (!funding || item.funding?.trim() === funding.trim())
+          );
+        });
         setOpportunities(filtered);
       }
       setLoading(false);
     }
     fetchData();
-  }, [degree, year]);
+  }, [degree, year, interests, oppType, region, funding]);
 
   if (loading) return <main className="p-10 text-white">Loading...</main>;
 
   return (
     <main className="p-10 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-white">
-        Opportunities for {degree} ({year})
-      </h1>
+      <h1 className="text-2xl font-bold mb-6 text-white">Results</h1>
       {opportunities.length === 0 ? (
         <p className="text-white">No opportunities found matching these criteria.</p>
       ) : (
